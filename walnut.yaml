@@ -1,0 +1,14 @@
+server:
+  ginmode: "debug"
+  addr: ":8888"
+  migratetable: true
+  data: "./data"
+
+log:
+  level: info
+
+sqlite:
+  path: "./walnut.db"
+
+jwt:
+  key: "abcdefg"
