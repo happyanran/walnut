@@ -16,6 +16,14 @@ func (s ServiceContext) PwdEnrypt(str string) string {
 	return string(pwd)
 }
 
+func (s ServiceContext) PwdCheck(pwd string, checkpwd string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(checkpwd)); err != nil {
+		return false
+	}
+
+	return true
+}
+
 func (s ServiceContext) GetCodeLine() string {
 	var str string
 	for i := 1; i < 10; i++ {

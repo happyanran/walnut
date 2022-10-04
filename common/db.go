@@ -20,7 +20,12 @@ func NewSqlite(s SqliteConf, l *logrus.Logger) (*gorm.DB, error) {
 		},
 	)
 
-	db, err := gorm.Open(sqlite.Open(s.path), &gorm.Config{Logger: newLogger})
+	db, err := gorm.Open(sqlite.Open(s.path), &gorm.Config{
+		Logger:                                   newLogger,
+		CreateBatchSize:                          1000,
+		DisableForeignKeyConstraintWhenMigrating: true,
+		AllowGlobalUpdate:                        false,
+	})
 	if err != nil {
 		return nil, err
 	}

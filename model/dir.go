@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Dir struct {
-	ID        uint32 `gorm:"type:integer NOT NULL PRIMARY KEY AUTOINCREMENT;"`
+	ID        int    `gorm:"type:integer NOT NULL PRIMARY KEY AUTOINCREMENT;"`
 	Pid       int    `gorm:"not null;"`
 	Name      string `gorm:"not null;"`
 	Note      string

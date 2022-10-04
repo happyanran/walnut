@@ -24,7 +24,7 @@ func Init(s *common.ServiceContext) error {
 			Password: svcCtx.PwdEnrypt("admin"),
 		}
 
-		svcCtx.SqlDB.Create(d)
+		d.UserCreate()
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"github.com/gin-gonic/gin"
@@ -17,7 +17,11 @@ func Router(e *gin.Engine, s *common.ServiceContext) {
 
 		user := api.Group("/user", middleware.AuthMw(svcCtx))
 		{
-			user.GET("/info", Signin)
+			user.GET("/all", UserGetAll)
+			user.GET("/allcnt", UserGetAllCnt)
+			user.POST("/add", UserAdd)
+			user.POST("/del", UserDel)
+			user.POST("/change", UserChange)
 		}
 	}
 }

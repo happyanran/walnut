@@ -8,12 +8,12 @@ import (
 )
 
 type Claims struct {
-	UserId uint32
+	UserId int
 	jwt.StandardClaims
 }
 
 // 颁发token
-func (s ServiceContext) GenerateToken(userId uint32) (string, error) {
+func (s ServiceContext) GenerateToken(userId int) (string, error) {
 	expireTime := time.Now().Add(time.Hour * time.Duration(s.Cfg.JwtConf.expireHour))
 	claims := Claims{
 		UserId: userId,

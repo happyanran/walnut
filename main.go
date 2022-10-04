@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/happyanran/walnut/api/handler"
+	"github.com/happyanran/walnut/api"
 	"github.com/happyanran/walnut/common"
 	"github.com/happyanran/walnut/model"
 )
@@ -17,7 +17,7 @@ func main() {
 
 	gin.SetMode(cfg.ServerConf.GinMode)
 	engine := gin.Default()
-	handler.Router(engine, svcCtx)
+	api.Router(engine, svcCtx)
 
 	svcCtx.Log.Panic(engine.Run(cfg.ServerConf.Addr))
 }

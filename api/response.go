@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"net/http"
@@ -12,6 +12,8 @@ const (
 	CodeServerErr        //http 500
 	CodeReqValErr
 	CodeSigninErr
+	CodeNotAdmin
+	CodeDataExist
 )
 
 func Response(c *gin.Context, httpStatus int, code int, data interface{}, msg string) {

@@ -1,17 +1,12 @@
-package handler
+package api
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/happyanran/walnut/model"
 )
 
-type SigninReq struct {
-	Username string `json:"username" validate:"required,min=1,max=20"`
-	Password string `json:"password" validate:"required,min=1,max=60"`
-}
-
 func Signin(c *gin.Context) {
-	var req SigninReq
+	var req UserReq
 
 	c.ShouldBindJSON(&req)
 
@@ -22,10 +17,15 @@ func Signin(c *gin.Context) {
 
 	user := model.User{
 		Username: req.Username,
-		Password: svcCtx.PwdEnrypt(req.Password),
 	}
 
-	if err := user.UserFindSignin(); err != nil || user.ID == 0 {
+	if err := user.UserFindByName(); err != nil {
+		ResponseServerErr(c, "发生错误")
+		svcCtx.Log.Error(err)
+		return
+	}
+
+	if user.ID == 0 || !svcCtx.PwdCheck(user.Password, req.Password) {
 		ResponseClientErrDtl(c, CodeSigninErr, nil, "账号或密码错误")
 		return
 	}
@@ -34,6 +34,7 @@ func Signin(c *gin.Context) {
 	token, err := svcCtx.GenerateToken(user.ID)
 	if err != nil {
 		ResponseServerErr(c, "Token生成失败")
+		svcCtx.Log.Error(err)
 		return
 	}
 

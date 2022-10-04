@@ -37,7 +37,7 @@ type JwtConf struct {
 func LoadConfig() *Config {
 	v := viper.New()
 
-	pflag.String("config", "./config.yaml", "config file path.")
+	pflag.String("config", "./walnut.yaml", "config file path.")
 	pflag.String("server.ginmode", "release", "The Gin mode.")
 	pflag.String("server.addr", "0.0.0.0:8080", "The address to listen on for HTTP requests.")
 	pflag.Bool("server.migratetable", true, "Auto migrate table.")
@@ -80,8 +80,8 @@ func LoadConfig() *Config {
 			path: v.GetString("sqlite.path"),
 		},
 		JwtConf: JwtConf{
-			key:        v.GetString("wt.key"),
-			expireHour: v.GetInt("wt.expirehour"),
+			key:        v.GetString("jwt.key"),
+			expireHour: v.GetInt("jwt.expirehour"),
 		},
 	}
 }
