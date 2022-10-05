@@ -33,7 +33,7 @@ func UserGetAll(c *gin.Context) {
 
 	c.ShouldBindJSON(&req)
 
-	if val := svcCtx.Struct(req); val != nil {
+	if val := svcCtx.ZhVal.Struct(req); val != nil {
 		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
 		return
 	}
@@ -60,14 +60,14 @@ func UserAdd(c *gin.Context) {
 
 	c.ShouldBindJSON(&req)
 
-	if val := svcCtx.Struct(req); val != nil {
+	if val := svcCtx.ZhVal.Struct(req); val != nil {
 		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
 		return
 	}
 
 	var u = &model.User{
 		Username: req.Username,
-		Password: svcCtx.PwdEnrypt(req.Password),
+		Password: svcCtx.Utilw.PwdEnrypt(req.Password),
 	}
 
 	if err := u.UserCreate(); err != nil {
@@ -89,7 +89,7 @@ func UserDel(c *gin.Context) {
 
 	c.ShouldBindJSON(&req)
 
-	if val := svcCtx.Struct(req); val != nil {
+	if val := svcCtx.ZhVal.Struct(req); val != nil {
 		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
 		return
 	}
@@ -112,7 +112,7 @@ func UserChange(c *gin.Context) {
 
 	c.ShouldBindJSON(&req)
 
-	if val := svcCtx.Struct(req); val != nil {
+	if val := svcCtx.ZhVal.Struct(req); val != nil {
 		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
 		return
 	}
@@ -124,7 +124,7 @@ func UserChange(c *gin.Context) {
 
 	var u = &model.User{
 		ID:       req.UserID,
-		Password: svcCtx.PwdEnrypt(req.Password),
+		Password: svcCtx.Utilw.PwdEnrypt(req.Password),
 	}
 
 	if err := u.UserUpdate(); err != nil {

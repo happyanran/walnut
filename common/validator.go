@@ -33,12 +33,12 @@ func NewValidate() (*Vlidate, error) {
 	}, nil
 }
 
-func (s *ServiceContext) Struct(i interface{}) *map[string]string {
-	err := s.ZhVal.Val.Struct(i)
+func (s Vlidate) Struct(i interface{}) *map[string]string {
+	err := s.Val.Struct(i)
 	if err != nil {
 		msg := make(map[string]string)
 		for _, m := range err.(validator.ValidationErrors) {
-			msg[m.Field()] = m.Translate(s.ZhVal.Trans)
+			msg[m.Field()] = m.Translate(s.Trans)
 		}
 		return &msg
 	}

@@ -7,14 +7,26 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type Jwts struct {
+	JwtKey     string
+	ExpireHour int
+}
+
 type Claims struct {
 	UserId int
 	jwt.StandardClaims
 }
 
+func NewJwtw(j JwtConf) *Jwts {
+	return &Jwts{
+		JwtKey:     j.key,
+		ExpireHour: j.expireHour,
+	}
+}
+
 // 颁发token
-func (s ServiceContext) GenerateToken(userId int) (string, error) {
-	expireTime := time.Now().Add(time.Hour * time.Duration(s.Cfg.JwtConf.expireHour))
+func (j Jwts) GenerateToken(userId int) (string, error) {
+	expireTime := time.Now().Add(time.Hour * time.Duration(j.ExpireHour))
 	claims := Claims{
 		UserId: userId,
 		StandardClaims: jwt.StandardClaims{
@@ -25,7 +37,7 @@ func (s ServiceContext) GenerateToken(userId int) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(s.Cfg.JwtConf.key))
+	tokenStr, err := token.SignedString([]byte(j.JwtKey))
 	if err != nil {
 		return "", err
 	}
@@ -34,10 +46,10 @@ func (s ServiceContext) GenerateToken(userId int) (string, error) {
 }
 
 // 解析token
-func (s ServiceContext) ParseToken(tokenStr string) (*Claims, error) {
+func (j Jwts) ParseToken(tokenStr string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (i interface{}, err error) {
-		return []byte(s.Cfg.JwtConf.key), nil
+		return []byte(j.JwtKey), nil
 	})
 
 	if err != nil {
@@ -52,13 +64,13 @@ func (s ServiceContext) ParseToken(tokenStr string) (*Claims, error) {
 }
 
 // 刷新 Token
-func (s ServiceContext) RefreshToken(tokenStr string) (string, error) {
-	claims, err := s.ParseToken(tokenStr)
+func (j Jwts) RefreshToken(tokenStr string) (string, error) {
+	claims, err := j.ParseToken(tokenStr)
 	if err != nil {
 		return "", err
 	}
 
-	token, err := s.GenerateToken(claims.UserId)
+	token, err := j.GenerateToken(claims.UserId)
 	if err != nil {
 		return "", err
 	}

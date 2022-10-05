@@ -18,7 +18,7 @@ func AuthMw(svcCtx *common.ServiceContext) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := svcCtx.ParseToken(tokenStr[7:])
+		claims, err := svcCtx.Jwtw.ParseToken(tokenStr[7:])
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"msg": "权限不足"})
 			c.Abort()

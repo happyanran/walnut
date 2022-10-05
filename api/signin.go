@@ -10,7 +10,7 @@ func Signin(c *gin.Context) {
 
 	c.ShouldBindJSON(&req)
 
-	if val := svcCtx.Struct(req); val != nil {
+	if val := svcCtx.ZhVal.Struct(req); val != nil {
 		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
 		return
 	}
@@ -25,13 +25,13 @@ func Signin(c *gin.Context) {
 		return
 	}
 
-	if user.ID == 0 || !svcCtx.PwdCheck(user.Password, req.Password) {
+	if user.ID == 0 || !svcCtx.Utilw.PwdCheck(user.Password, req.Password) {
 		ResponseClientErrDtl(c, CodeSigninErr, nil, "账号或密码错误")
 		return
 	}
 
 	//token
-	token, err := svcCtx.GenerateToken(user.ID)
+	token, err := svcCtx.Jwtw.GenerateToken(user.ID)
 	if err != nil {
 		ResponseServerErr(c, "Token生成失败")
 		svcCtx.Log.Error(err)

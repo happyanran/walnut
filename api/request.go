@@ -6,8 +6,8 @@ type PageReq struct {
 }
 
 type UserReq struct {
-	Username string `json:"username" validate:"required,min=1,max=20"`
-	Password string `json:"password" validate:"required,min=1,max=60"`
+	Username string `json:"username" validate:"required,min=3,max=20"`
+	Password string `json:"password" validate:"required,min=5,max=60"`
 }
 
 type UserDelReq struct {

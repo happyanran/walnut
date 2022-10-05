@@ -7,7 +7,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s ServiceContext) PwdEnrypt(str string) string {
+type Utils struct{}
+
+func NewUtil() *Utils {
+	return &Utils{}
+}
+
+func (u Utils) PwdEnrypt(str string) string {
 	pwd, err := bcrypt.GenerateFromPassword([]byte(str), bcrypt.DefaultCost)
 	if err != nil {
 		return ""
@@ -16,7 +22,7 @@ func (s ServiceContext) PwdEnrypt(str string) string {
 	return string(pwd)
 }
 
-func (s ServiceContext) PwdCheck(pwd string, checkpwd string) bool {
+func (u Utils) PwdCheck(pwd string, checkpwd string) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(checkpwd)); err != nil {
 		return false
 	}
@@ -24,7 +30,7 @@ func (s ServiceContext) PwdCheck(pwd string, checkpwd string) bool {
 	return true
 }
 
-func (s ServiceContext) GetCodeLine() string {
+func (u Utils) GetCodeLine() string {
 	var str string
 	for i := 1; i < 10; i++ {
 		pc, file, line, ok := runtime.Caller(i)

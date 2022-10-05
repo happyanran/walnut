@@ -20,8 +20,13 @@ func Init(s *common.ServiceContext) error {
 		}
 
 		var d = &User{
+			ID:       1,
 			Username: "admin",
-			Password: svcCtx.PwdEnrypt("admin"),
+			Password: svcCtx.Utilw.PwdEnrypt("admin"),
+		}
+
+		if err := d.UserFindByID(); err == nil {
+			return nil
 		}
 
 		d.UserCreate()

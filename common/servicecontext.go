@@ -6,18 +6,26 @@ import (
 )
 
 type ServiceContext struct {
-	Cfg   *Config
-	Log   *logrus.Logger
-	SqlDB *gorm.DB
-	ZhVal *Vlidate
+	Cfg    *Config
+	Log    *logrus.Logger
+	FileOp *FileOp
+	SqlDB  *gorm.DB
+	ZhVal  *Vlidate
+	Jwtw   *Jwts
+	Utilw  *Utils
 }
 
 func NewServiceContext(c *Config) *ServiceContext {
 	log := NewLog(c.LogConf)
-	
-	db,err := NewSqlite(c.SqliteConf, log)
+
+	fileOp, err := NewFileOp(c.ServerConf)
 	if err != nil {
-		log.Error("Sqlite init failed: ", err)
+		log.Fatal("Dir init failed: ", err)
+	}
+
+	db, err := NewSqlite(c.SqliteConf, log)
+	if err != nil {
+		log.Fatal("Sqlite init failed: ", err)
 	}
 
 	val, err := NewValidate()
@@ -25,10 +33,17 @@ func NewServiceContext(c *Config) *ServiceContext {
 		log.Error("Validate init failed: ", err)
 	}
 
+	jwtw := NewJwtw(c.JwtConf)
+
+	utilw := NewUtil()
+
 	return &ServiceContext{
-		Cfg:   c,
-		Log:   log,
-		SqlDB: db,
-		ZhVal: val,
+		Cfg:    c,
+		Log:    log,
+		FileOp: fileOp,
+		SqlDB:  db,
+		ZhVal:  val,
+		Jwtw:   jwtw,
+		Utilw:  utilw,
 	}
 }

@@ -41,7 +41,7 @@ func LoadConfig() *Config {
 	pflag.String("server.ginmode", "release", "The Gin mode.")
 	pflag.String("server.addr", "0.0.0.0:8080", "The address to listen on for HTTP requests.")
 	pflag.Bool("server.migratetable", true, "Auto migrate table.")
-	pflag.String("server.data", "./data", "Files path.")
+	pflag.String("server.data", "./data", "Root Dir.")
 	pflag.String("log.level", "info", "log level: error, warn, info.")
 	pflag.String("sqlite.path", "./walnut.db", "Sqlite db file path.")
 	pflag.String("jwt.key", "abcdefg", "Jwt key.")
