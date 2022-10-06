@@ -14,6 +14,8 @@ const (
 	CodeSigninErr
 	CodeNotAdmin
 	CodeDataExist
+	CodeDirNotExist
+	CodeDirMoveToChild
 )
 
 func Response(c *gin.Context, httpStatus int, code int, data interface{}, msg string) {

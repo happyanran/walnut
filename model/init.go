@@ -19,17 +19,30 @@ func Init(s *common.ServiceContext) error {
 			return err
 		}
 
-		var d = &User{
+		u := &User{
 			ID:       1,
 			Username: "admin",
 			Password: svcCtx.Utilw.PwdEnrypt("admin"),
 		}
 
-		if err := d.UserFindByID(); err == nil {
+		if err := u.UserFindByID(); err == nil {
 			return nil
 		}
 
-		d.UserCreate()
+		u.UserCreate()
+
+		d := &Dir{
+			ID:   1,
+			PID:  0,
+			Path: "",
+			Name: "walnut",
+		}
+
+		if err := d.DirFindByID(); err == nil {
+			return nil
+		}
+
+		d.DirCreate()
 	}
 
 	return nil

@@ -23,13 +23,18 @@ func UserGetAllCnt(c *gin.Context) {
 	ResponseOK(c, cnt, "成功")
 }
 
+type UserGetAllReq struct {
+	Page int `json:"page" validate:"required,min=1"`
+	Size int `json:"size" validate:"required,min=1"`
+}
+
 func UserGetAll(c *gin.Context) {
 	if c.GetInt("UserID") != 1 {
 		ResponseClientErrDtl(c, CodeNotAdmin, nil, "无权访问")
 		return
 	}
 
-	var req PageReq
+	var req UserGetAllReq
 
 	c.ShouldBindJSON(&req)
 
@@ -50,13 +55,18 @@ func UserGetAll(c *gin.Context) {
 	ResponseOK(c, users, "成功")
 }
 
+type UserAddReq struct {
+	Username string `json:"username" validate:"required,min=3,max=20"`
+	Password string `json:"password" validate:"required,min=5,max=60"`
+}
+
 func UserAdd(c *gin.Context) {
 	if c.GetInt("UserID") != 1 {
 		ResponseClientErrDtl(c, CodeNotAdmin, nil, "无权访问")
 		return
 	}
 
-	var req UserReq
+	var req UserAddReq
 
 	c.ShouldBindJSON(&req)
 
@@ -65,18 +75,22 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
-	var u = &model.User{
+	user := &model.User{
 		Username: req.Username,
 		Password: svcCtx.Utilw.PwdEnrypt(req.Password),
 	}
 
-	if err := u.UserCreate(); err != nil {
+	if err := user.UserCreate(); err != nil {
 		ResponseServerErr(c, "用户创建失败")
 		svcCtx.Log.Error(err)
 		return
 	}
 
 	ResponseOK(c, nil, "用户创建成功")
+}
+
+type UserDelReq struct {
+	UserID int `json:"userid" validate:"required,min=2"`
 }
 
 func UserDel(c *gin.Context) {
@@ -94,11 +108,11 @@ func UserDel(c *gin.Context) {
 		return
 	}
 
-	var u = &model.User{
+	user := &model.User{
 		ID: req.UserID,
 	}
 
-	if err := u.UserDelete(); err != nil {
+	if err := user.UserDelete(); err != nil {
 		ResponseServerErr(c, "用户删除失败")
 		svcCtx.Log.Error(err)
 		return
@@ -107,8 +121,13 @@ func UserDel(c *gin.Context) {
 	ResponseOK(c, nil, "用户删除成功")
 }
 
+type UserChangeReq struct {
+	UserID   int    `json:"userid" validate:"required,min=1"`
+	Password string `json:"password" validate:"required,min=5,max=60"`
+}
+
 func UserChange(c *gin.Context) {
-	var req UserChgReq
+	var req UserChangeReq
 
 	c.ShouldBindJSON(&req)
 
@@ -122,12 +141,12 @@ func UserChange(c *gin.Context) {
 		return
 	}
 
-	var u = &model.User{
+	user := &model.User{
 		ID:       req.UserID,
 		Password: svcCtx.Utilw.PwdEnrypt(req.Password),
 	}
 
-	if err := u.UserUpdate(); err != nil {
+	if err := user.UserUpdate(); err != nil {
 		ResponseServerErr(c, "密码更新失败")
 		svcCtx.Log.Error(err)
 		return

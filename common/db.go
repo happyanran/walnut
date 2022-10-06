@@ -14,7 +14,7 @@ func NewSqlite(s SqliteConf, l *logrus.Logger) (*gorm.DB, error) {
 		l, // io writer
 		logger.Config{
 			SlowThreshold:             time.Second, // Slow SQL threshold
-			LogLevel:                  logger.Warn, // Log level
+			LogLevel:                  logger.Info, // Log level
 			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
 			Colorful:                  false,       // Disable color
 		},
@@ -25,7 +25,9 @@ func NewSqlite(s SqliteConf, l *logrus.Logger) (*gorm.DB, error) {
 		CreateBatchSize:                          1000,
 		DisableForeignKeyConstraintWhenMigrating: true,
 		AllowGlobalUpdate:                        false,
+		SkipDefaultTransaction:                   true,
 	})
+
 	if err != nil {
 		return nil, err
 	}
