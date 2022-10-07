@@ -8,9 +8,9 @@ import (
 
 type Dir struct {
 	ID        int       `gorm:"type:integer NOT NULL PRIMARY KEY AUTOINCREMENT;"`
-	PID       int       `gorm:"not null;index:idx_pid;"`
+	PID       int       `gorm:"not null;uniqueIndex:idx_pid_name,priority:1;"`
 	Path      string    `gorm:"not null;index:idx_path;"`
-	Name      string    `gorm:"not null;"`
+	Name      string    `gorm:"not null;uniqueIndex:idx_pid_name,priority:2;"`
 	Note      string    `gorm:""`
 	CreatedAt time.Time `gorm:"autoCreateTime;"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime;"`
@@ -61,5 +61,15 @@ func (m *Dir) DirFilesFindByID() error {
 }
 
 func (m *Dir) DirFindByPID(dirs *[]Dir) error {
-	return svcCtx.SqlDB.Where(m, "pid").Find(dirs).Error
+	return svcCtx.SqlDB.Where(m, "p_id").Find(dirs).Error
+}
+
+func (m *Dir) DirNameCheckByPID(pid int, name string) (int64, error) {
+	var count int64
+
+	if err := svcCtx.SqlDB.Model(&Dir{}).Where("p_id = ? and name = ?", pid, name).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

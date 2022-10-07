@@ -12,3 +12,4 @@ sqlite:
 
 jwt:
   key: "abcdefg"
+  expirehour: 2400

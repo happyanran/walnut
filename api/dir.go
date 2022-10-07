@@ -44,6 +44,19 @@ func DirAdd(c *gin.Context) {
 		Note: req.Note,
 	}
 
+	//判断文件夹名是否冲突
+	cnt, err := dir.DirNameCheckByPID(req.PID, req.Name)
+
+	switch {
+	case err != nil:
+		ResponseServerErr(c, "文件夹创建失败")
+		svcCtx.Log.Error(err)
+		return
+	case cnt != 0:
+		ResponseClientErrDtl(c, CodeDirNameExist, nil, "文件夹名冲突")
+		return
+	}
+
 	if err := dir.DirCreate(); err != nil {
 		ResponseServerErr(c, "文件夹创建失败")
 		svcCtx.Log.Error(err)
@@ -119,6 +132,19 @@ func DirRename(c *gin.Context) {
 		return
 	}
 
+	//判断文件夹名是否冲突
+	cnt, err := dir.DirNameCheckByPID(dir.PID, req.NewName)
+
+	switch {
+	case err != nil:
+		ResponseServerErr(c, "文件夹创建失败")
+		svcCtx.Log.Error(err)
+		return
+	case cnt != 0:
+		ResponseClientErrDtl(c, CodeDirNameExist, nil, "文件夹名冲突")
+		return
+	}
+
 	dir.Name = req.NewName
 
 	if err := dir.DirUpdate(); err != nil {
@@ -167,6 +193,19 @@ func DirMove(c *gin.Context) {
 	if err := toDir.DirFindByID(); err != nil {
 		ResponseClientErrDtl(c, CodeDirNotExist, nil, "文件夹不存在")
 		svcCtx.Log.Error(err)
+		return
+	}
+
+	//判断文件夹名是否冲突
+	cnt, err := dir.DirNameCheckByPID(req.ToID, dir.Name)
+
+	switch {
+	case err != nil:
+		ResponseServerErr(c, "文件夹创建失败")
+		svcCtx.Log.Error(err)
+		return
+	case cnt != 0:
+		ResponseClientErrDtl(c, CodeDirNameExist, nil, "文件夹名冲突")
 		return
 	}
 

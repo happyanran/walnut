@@ -6,8 +6,8 @@ import (
 
 type File struct {
 	ID        int       `gorm:"type:integer NOT NULL PRIMARY KEY AUTOINCREMENT;"`
-	DirID     int       `gorm:"not null;index:idx_dir_id;"`
-	Name      string    `gorm:"not null;"`
+	DirID     int       `gorm:"not null;uniqueIndex:idx_dirid_name,priority:1;"`
+	Name      string    `gorm:"not null;uniqueIndex:idx_dirid_name,priority:2;"`
 	ExtType   string    `gorm:"not null;"`
 	Note      string    `gorm:""`
 	Hash      string    `gorm:""`

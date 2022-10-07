@@ -15,6 +15,7 @@ const (
 	CodeNotAdmin
 	CodeDataExist
 	CodeDirNotExist
+	CodeDirNameExist
 	CodeDirMoveToChild
 )
 
