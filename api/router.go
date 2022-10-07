@@ -11,7 +11,7 @@ var svcCtx *common.ServiceContext
 func Router(e *gin.Engine, s *common.ServiceContext) {
 	svcCtx = s
 
-	e.MaxMultipartMemory = 1 << 40 // 8 MiB
+	e.MaxMultipartMemory = 100 << 20 // 100 MiB
 
 	api := e.Group("/api")
 	{
@@ -33,7 +33,7 @@ func Router(e *gin.Engine, s *common.ServiceContext) {
 			file.POST("/dirrename", DirRename)
 			file.POST("/dirmove", DirMove)
 
-			file.POST("/fileupload", FileGetAll)
+			file.POST("/upload", FileUpload)
 			file.GET("/getall", FileGetAll)
 		}
 	}

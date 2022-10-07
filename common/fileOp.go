@@ -22,6 +22,10 @@ func (s FileOp) DirCreate(path, name string) error {
 	return os.MkdirAll(filepath.Join(s.BasePath, path, name), 640)
 }
 
+func (s FileOp) FileUpload(path string, f func(string) error) error {
+	return f(filepath.Join(s.BasePath, path))
+}
+
 func (s FileOp) FileCreate(name string, b []byte) (int, error) {
 	file, err := os.OpenFile(filepath.Join(s.BasePath, name), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
 	if err != nil {

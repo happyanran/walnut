@@ -37,5 +37,5 @@ func (m *File) FileFindByID() error {
 }
 
 func (m *File) FileFindByDirID(files *[]File) error {
-	return svcCtx.SqlDB.Where(m, "DirID").Find(files).Error
+	return svcCtx.SqlDB.Where(m, "Dir_ID").Find(files).Error
 }
