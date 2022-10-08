@@ -34,7 +34,11 @@ func Router(e *gin.Engine, s *common.ServiceContext) {
 			file.POST("/dirmove", DirMove)
 
 			file.POST("/upload", FileUpload)
-			file.GET("/getall", FileGetAll)
+			file.POST("/filedel", FileDel)
+			file.POST("/filerename", FileRename)
+			file.POST("/filemove", FileMove)
+
+			file.GET("/get", FileGet)
 		}
 	}
 }

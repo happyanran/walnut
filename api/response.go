@@ -14,8 +14,8 @@ const (
 	CodeSigninErr
 	CodeNotAdmin
 	CodeDataExist
-	CodeDirNotExist
-	CodeDirNameExist
+	CodeIDNotExist
+	CodeNameExist
 	CodeDirMoveToChild
 )
 

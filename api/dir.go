@@ -9,6 +9,49 @@ import (
 	"github.com/happyanran/walnut/model"
 )
 
+type FileGetResp struct {
+	DirFiles  *model.Dir
+	ChildDirs []model.Dir
+}
+
+type FileGetReq struct {
+	DirID int `json:"dirid" validate:"required,min=1"`
+}
+
+func FileGet(c *gin.Context) {
+	var req FileGetReq
+
+	c.ShouldBindJSON(&req)
+
+	if val := svcCtx.ZhVal.Struct(req); val != nil {
+		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
+		return
+	}
+
+	dir := &model.Dir{
+		ID: req.DirID,
+	}
+
+	if err := dir.DirFilesFindByID(); err != nil {
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
+		svcCtx.Log.Error(err)
+		return
+	}
+
+	var childDirs []model.Dir
+
+	if err := dir.DirFindByPID(childDirs); err != nil {
+		ResponseServerErr(c, "获取文件夹失败")
+		svcCtx.Log.Error(err)
+		return
+	}
+
+	ResponseOK(c, FileGetResp{
+		DirFiles:  dir,
+		ChildDirs: childDirs,
+	}, "获取文件成功")
+}
+
 type DirAddReq struct {
 	PID  int    `json:"pid" validate:"required,min=1"`
 	Name string `json:"name" validate:"required,min=1"`
@@ -30,7 +73,7 @@ func DirAdd(c *gin.Context) {
 	}
 
 	if err := pdir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeDirNotExist, nil, "文件夹不存在")
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
 		svcCtx.Log.Error(err)
 		return
 	}
@@ -53,7 +96,7 @@ func DirAdd(c *gin.Context) {
 		svcCtx.Log.Error(err)
 		return
 	case cnt != 0:
-		ResponseClientErrDtl(c, CodeDirNameExist, nil, "文件夹名冲突")
+		ResponseClientErrDtl(c, CodeNameExist, nil, "文件夹名冲突")
 		return
 	}
 
@@ -91,7 +134,7 @@ func DirDel(c *gin.Context) {
 	}
 
 	if err := dir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeDirNotExist, nil, "文件夹不存在")
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
 		svcCtx.Log.Error(err)
 		return
 	}
@@ -127,7 +170,7 @@ func DirRename(c *gin.Context) {
 	}
 
 	if err := dir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeDirNotExist, nil, "文件夹不存在")
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
 		svcCtx.Log.Error(err)
 		return
 	}
@@ -141,7 +184,7 @@ func DirRename(c *gin.Context) {
 		svcCtx.Log.Error(err)
 		return
 	case cnt != 0:
-		ResponseClientErrDtl(c, CodeDirNameExist, nil, "文件夹名冲突")
+		ResponseClientErrDtl(c, CodeNameExist, nil, "文件夹名冲突")
 		return
 	}
 
@@ -176,7 +219,7 @@ func DirMove(c *gin.Context) {
 	}
 
 	if err := dir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeDirNotExist, nil, "文件夹不存在")
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
 		svcCtx.Log.Error(err)
 		return
 	}
@@ -191,7 +234,7 @@ func DirMove(c *gin.Context) {
 	}
 
 	if err := toDir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeDirNotExist, nil, "文件夹不存在")
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
 		svcCtx.Log.Error(err)
 		return
 	}
@@ -205,7 +248,7 @@ func DirMove(c *gin.Context) {
 		svcCtx.Log.Error(err)
 		return
 	case cnt != 0:
-		ResponseClientErrDtl(c, CodeDirNameExist, nil, "文件夹名冲突")
+		ResponseClientErrDtl(c, CodeNameExist, nil, "文件夹名冲突")
 		return
 	}
 
