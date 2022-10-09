@@ -60,7 +60,7 @@ func (m *Dir) DirFilesFindByID() error {
 	return svcCtx.SqlDB.Preload("Files").First(m).Error
 }
 
-func (m *Dir) DirFindByPID(dirs []Dir) error {
+func (m *Dir) DirFindByPID(dirs *[]Dir) error {
 	return svcCtx.SqlDB.Model(&Dir{}).Where("p_id = ?", m.ID).Find(dirs).Error
 }
 

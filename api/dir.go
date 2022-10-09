@@ -40,7 +40,7 @@ func FileGet(c *gin.Context) {
 
 	var childDirs []model.Dir
 
-	if err := dir.DirFindByPID(childDirs); err != nil {
+	if err := dir.DirFindByPID(&childDirs); err != nil {
 		ResponseServerErr(c, "获取文件夹失败")
 		svcCtx.Log.Error(err)
 		return
