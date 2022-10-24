@@ -9,9 +9,9 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func NewSqlite(s SqliteConf, l *logrus.Logger) (*gorm.DB, error) {
+func NewSqlite(s SqliteConf, log *logrus.Logger) (*gorm.DB, error) {
 	newLogger := logger.New(
-		l, // io writer
+		log, // io writer
 		logger.Config{
 			SlowThreshold:             time.Second, // Slow SQL threshold
 			LogLevel:                  logger.Info, // Log level
@@ -20,7 +20,7 @@ func NewSqlite(s SqliteConf, l *logrus.Logger) (*gorm.DB, error) {
 		},
 	)
 
-	db, err := gorm.Open(sqlite.Open(s.path), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(s.Path), &gorm.Config{
 		Logger:                                   newLogger,
 		CreateBatchSize:                          1000,
 		DisableForeignKeyConstraintWhenMigrating: true,

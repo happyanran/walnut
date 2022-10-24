@@ -21,8 +21,9 @@ func Init(s *common.ServiceContext) error {
 
 		u := &User{
 			ID:       1,
-			Username: "admin",
+			UserName: "admin",
 			Password: svcCtx.Utilw.PwdEnrypt("admin"),
+			NickName: "admin",
 		}
 
 		if err := u.UserFindByID(); err == nil {
@@ -34,8 +35,7 @@ func Init(s *common.ServiceContext) error {
 		d := &Dir{
 			ID:   1,
 			PID:  0,
-			Path: "",
-			Name: "walnut",
+			Name: "小核桃",
 		}
 
 		if err := d.DirFindByID(); err == nil {

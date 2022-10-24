@@ -11,19 +11,18 @@ var svcCtx *common.ServiceContext
 func Router(e *gin.Engine, s *common.ServiceContext) {
 	svcCtx = s
 
-	e.MaxMultipartMemory = 100 << 20 // 100 MiB
+	e.MaxMultipartMemory = 1 << 30 // 1G
 
 	api := e.Group("/api")
 	{
-		api.POST("/auth/signin", Signin)
+		api.POST("/signin", Signin)
 
 		user := api.Group("/user", middleware.AuthMw(svcCtx))
 		{
-			user.GET("/getall", UserGetAll)
-			user.GET("/getallcnt", UserGetAllCnt)
-			user.POST("/add", UserAdd)
-			user.POST("/del", UserDel)
-			user.POST("/change", UserChange)
+			user.POST("/add", UserAdd)       //todo
+			user.POST("/del", UserDel)       //todo
+			user.POST("/change", UserChange) //todo
+			user.GET("/getall", UserGetAll)  //todo
 		}
 
 		file := api.Group("/file", middleware.AuthMw(svcCtx))
@@ -32,13 +31,17 @@ func Router(e *gin.Engine, s *common.ServiceContext) {
 			file.POST("/dirdel", DirDel)
 			file.POST("/dirrename", DirRename)
 			file.POST("/dirmove", DirMove)
+			file.GET("/dirget", DirGet)
+			file.GET("/dirgetchilds", DirGetChilds)
 
-			file.POST("/upload", FileUpload)
+			file.POST("/fileupload", FileUpload)
 			file.POST("/filedel", FileDel)
 			file.POST("/filerename", FileRename)
 			file.POST("/filemove", FileMove)
+			file.GET("/filegetbydir", FileGetByDir)
+			//file.GET("/filegetbytype", FileGetByType)
 
-			file.GET("/get", FileGet)
+			file.StaticFS("/staticfs", gin.Dir(svcCtx.Cfg.ServerConf.Data, true))
 		}
 	}
 }

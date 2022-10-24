@@ -14,14 +14,14 @@ func AuthMw(svcCtx *common.ServiceContext) gin.HandlerFunc {
 		tokenStr := c.GetHeader("Authorization")
 
 		if tokenStr == "" || !strings.HasPrefix(tokenStr, "Bearer ") {
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": "权限不足"})
+			c.JSON(http.StatusUnauthorized, gin.H{"code": 3, "data": nil, "msg": "请登录"})
 			c.Abort()
 			return
 		}
 
 		claims, err := svcCtx.Jwtw.ParseToken(tokenStr[7:])
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": "权限不足"})
+			c.JSON(http.StatusUnauthorized, gin.H{"code": 3, "data": nil, "msg": "请登录"})
 			c.Abort()
 			return
 		}
@@ -32,13 +32,13 @@ func AuthMw(svcCtx *common.ServiceContext) gin.HandlerFunc {
 		}
 
 		if err := user.UserFindByID(); err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": "权限不足"})
+			c.JSON(http.StatusUnauthorized, gin.H{"code": 3, "data": nil, "msg": "请登录"})
 			c.Abort()
 			return
 		}
 
 		c.Set("UserID", user.ID)
-		c.Set("Username", user.Username)
+		c.Set("Username", user.UserName)
 
 		c.Next()
 	}

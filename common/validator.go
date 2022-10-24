@@ -1,6 +1,8 @@
 package common
 
 import (
+	"strings"
+
 	"github.com/go-playground/locales/zh"
 	"github.com/go-playground/validator/v10"
 
@@ -38,7 +40,7 @@ func (s Vlidate) Struct(i interface{}) *map[string]string {
 	if err != nil {
 		msg := make(map[string]string)
 		for _, m := range err.(validator.ValidationErrors) {
-			msg[m.Field()] = m.Translate(s.Trans)
+			msg[strings.ToLower(m.Field())] = strings.ToLower(m.Translate(s.Trans))
 		}
 		return &msg
 	}

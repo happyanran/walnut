@@ -4,13 +4,20 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/disintegration/imaging"
+	"github.com/sirupsen/logrus"
 )
 
 type FileOp struct {
 	BasePath string
 }
 
-func NewFileOp(s ServerConf) (*FileOp, error) {
+var fileOpLog *logrus.Logger
+
+func NewFileOp(s ServerConf, log *logrus.Logger) (*FileOp, error) {
+	fileOpLog = log
+
 	if s.Data == "" {
 		return nil, errors.New("Data dir should not be null.")
 	}
@@ -18,12 +25,30 @@ func NewFileOp(s ServerConf) (*FileOp, error) {
 	return &FileOp{BasePath: s.Data}, os.MkdirAll(s.Data, 640)
 }
 
-func (s FileOp) DirCreate(path, name string) error {
-	return os.MkdirAll(filepath.Join(s.BasePath, path, name), 640)
+func (s FileOp) DirCreate(path string) error {
+	return os.MkdirAll(filepath.Join(s.BasePath, path), 640)
 }
 
-func (s FileOp) FileUpload(path string, f func(string) error) error {
-	return f(filepath.Join(s.BasePath, path))
+func (s FileOp) FileUpload(path, name string, f func(string) error) error {
+	if err := s.DirCreate(path); err != nil {
+		return err
+	}
+
+	return f(filepath.Join(s.BasePath, path, name))
+}
+
+func (s FileOp) ImgResize(path, srcName, destName string, width, height int) {
+	src, err := imaging.Open(filepath.Join(s.BasePath, path, srcName))
+	if err != nil {
+		fileOpLog.Error(err)
+	}
+
+	des := imaging.Resize(src, width, height, imaging.Lanczos)
+
+	err = imaging.Save(des, filepath.Join(s.BasePath, path, destName))
+	if err != nil {
+		fileOpLog.Error(err)
+	}
 }
 
 func (s FileOp) FileCreate(name string, b []byte) (int, error) {
@@ -35,12 +60,4 @@ func (s FileOp) FileCreate(name string, b []byte) (int, error) {
 	defer file.Close()
 
 	return file.Write(b)
-}
-
-func (s FileOp) FileRemoveAll(path string) error {
-	return os.RemoveAll(filepath.Join(s.BasePath, path))
-}
-
-func (s FileOp) FileRename(oldpath, oldid, newpath, newid string) error {
-	return os.Rename(filepath.Join(s.BasePath, oldpath, oldid), filepath.Join(s.BasePath, newpath, newid))
 }

@@ -2,15 +2,15 @@ package api
 
 import (
 	"path/filepath"
-	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/happyanran/walnut/model"
 )
 
 type FileUploadReq struct {
-	DirID   int  `form:"dirid" validate:"required,min=1"`
-	IsCover bool `form:"iscover"`
+	DirID   int  `form:"dirID" validate:"required,min=1"`
+	IsCover bool `form:"isCover"`
 }
 
 func FileUpload(c *gin.Context) {
@@ -29,7 +29,6 @@ func FileUpload(c *gin.Context) {
 
 	if err := dir.DirFindByID(); err != nil {
 		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
-		svcCtx.Log.Error(err)
 		return
 	}
 
@@ -41,53 +40,75 @@ func FileUpload(c *gin.Context) {
 		return
 	}
 
-	files := form.File["uploadfiles"]
+	files := form.File["uploadFiles"]
 
-	for _, file := range files {
-		//写数据库
-		mfile := model.File{
-			DirID:   dir.ID,
-			Name:    file.Filename,
-			ExtType: filepath.Ext(file.Filename),
-			Size:    file.Size,
+	//var wg sync.WaitGroup
+
+	for _, f := range files {
+		file := model.File{
+			DirID:   req.DirID,
+			Name:    f.Filename,
+			ExtType: strings.ToUpper(strings.Replace(filepath.Ext(f.Filename), ".", "", -1)),
 		}
 
 		//判断文件名是否冲突
-		if req.IsCover {
-			mfile.FileDeleteByDirName()
-		} else {
-			cnt, _ := mfile.FileNameCheckByDirID()
-			if cnt != 0 {
+		file.FileFindByName()
+
+		if file.ID > 0 {
+			if !req.IsCover {
 				ResponseClientErrDtl(c, CodeNameExist, nil, "文件名冲突")
 				return
 			}
+		} else {
+			nanoName := svcCtx.Utilw.GenNanoName()
+
+			file.OriginalName = "Ori" + "-" + nanoName + "." + file.ExtType
+			file.SmallImgName = "Sma" + "-" + nanoName + "." + file.ExtType
+			file.LargeImgName = "Lar" + "-" + nanoName + "." + file.ExtType
 		}
 
+		file.OriginalSize = f.Size
+
 		err = svcCtx.FileOp.FileUpload(
-			filepath.Join(dir.Path, strconv.Itoa(dir.ID), mfile.Name),
+			file.ExtType,
+			file.OriginalName,
 			func(fullpath string) error {
-				return c.SaveUploadedFile(file, fullpath)
+				return c.SaveUploadedFile(f, fullpath)
 			},
 		)
 
 		if err != nil {
-			ResponseServerErr(c, "文件上传失败")
+			ResponseServerErr(c)
 			svcCtx.Log.Error(err)
 			return
 		}
 
-		if err := mfile.FileCreate(); err != nil {
-			ResponseServerErr(c, "文件上传失败")
-			svcCtx.Log.Error(err)
-			return
+		if file.ExtType == "JPG" || file.ExtType == "JPEG" {
+			//wg.Add(2)
+			go svcCtx.FileOp.ImgResize(file.ExtType, file.OriginalName, file.SmallImgName, 200, 0)
+			go svcCtx.FileOp.ImgResize(file.ExtType, file.OriginalName, file.LargeImgName, 800, 0)
+		}
+
+		if file.ID > 0 {
+			if err := file.FileUpdate(); err != nil {
+				ResponseServerErr(c)
+				return
+			}
+		} else {
+			if err := file.FileCreate(); err != nil {
+				ResponseServerErr(c)
+				return
+			}
 		}
 	}
 
 	ResponseOK(c, nil, "文件上传成功")
+
+	//wg.Wait()
 }
 
 type FileDelReq struct {
-	ID int `json:"id" validate:"required,min=1"`
+	ID int `json:"ID" validate:"required,min=1"`
 }
 
 func FileDel(c *gin.Context) {
@@ -105,8 +126,7 @@ func FileDel(c *gin.Context) {
 	}
 
 	if err := file.FileDelete(); err != nil {
-		ResponseServerErr(c, "文件删除失败")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 
@@ -114,8 +134,8 @@ func FileDel(c *gin.Context) {
 }
 
 type FileRenameReq struct {
-	ID      int    `json:"id" validate:"required,min=1"`
-	NewName string `json:"newname" validate:"required,min=1"`
+	ID      int    `json:"ID" validate:"required,min=1"`
+	NewName string `json:"newName" validate:"required,min=1"`
 }
 
 func FileRename(c *gin.Context) {
@@ -134,47 +154,18 @@ func FileRename(c *gin.Context) {
 
 	if err := file.FileFindByID(); err != nil {
 		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件不存在")
-		svcCtx.Log.Error(err)
 		return
 	}
 
-	if file.Name == req.NewName {
-		ResponseOK(c, nil, "文件重命名成功")
+	if file.ExtType != strings.ToUpper(strings.Replace(filepath.Ext(req.NewName), ".", "", -1)) {
+		ResponseClientErrDtl(c, CodeFileExtErr, nil, "不允许修改文件类型")
 		return
 	}
 
-	oldName := file.Name
 	file.Name = req.NewName
-	file.ExtType = filepath.Ext(req.NewName)
-
-	//判断文件名是否冲突
-	cnt, _ := file.FileNameCheckByDirID()
-	if cnt != 0 {
-		ResponseClientErrDtl(c, CodeNameExist, nil, "文件名冲突")
-		return
-	}
-
-	dir := model.Dir{
-		ID: file.DirID,
-	}
-
-	if err := dir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
-		svcCtx.Log.Error(err)
-		return
-	}
-
-	path := filepath.Join(dir.Path, strconv.Itoa(dir.ID))
-
-	if err := svcCtx.FileOp.FileRename(path, oldName, path, file.Name); err != nil {
-		ResponseServerErr(c, "文件重命名失败")
-		svcCtx.Log.Error(err)
-		return
-	}
 
 	if err := file.FileUpdate(); err != nil {
-		ResponseServerErr(c, "文件重命名失败")
-		svcCtx.Log.Error(err)
+		ResponseClientErrDtl(c, CodeNameExist, nil, "文件名冲突")
 		return
 	}
 
@@ -182,8 +173,8 @@ func FileRename(c *gin.Context) {
 }
 
 type FileMoveReq struct {
-	ID      int `json:"id" validate:"required,min=1"`
-	ToDirID int `json:"todirid" validate:"required,min=1"`
+	ID      int `json:"ID" validate:"required,min=1"`
+	ToDirID int `json:"toDirID" validate:"required,min=1"`
 }
 
 func FileMove(c *gin.Context) {
@@ -196,81 +187,57 @@ func FileMove(c *gin.Context) {
 		return
 	}
 
+	toDir := model.Dir{
+		ID: req.ToDirID,
+	}
+
+	if err := toDir.DirFindByID(); err != nil {
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
+		return
+	}
+
 	file := model.File{
 		ID: req.ID,
 	}
 
 	if err := file.FileFindByID(); err != nil {
 		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件不存在")
-		svcCtx.Log.Error(err)
 		return
 	}
-
-	if file.DirID == req.ToDirID {
-		ResponseOK(c, nil, "文件移动成功")
-		return
-	}
-
-	FromDir := model.Dir{
-		ID: file.DirID,
-	}
-
-	if err := FromDir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
-		svcCtx.Log.Error(err)
-		return
-	}
-
-	fromPath := filepath.Join(FromDir.Path, strconv.Itoa(FromDir.ID))
 
 	file.DirID = req.ToDirID
 
-	//判断文件名是否冲突
-	cnt, _ := file.FileNameCheckByDirID()
-	if cnt != 0 {
-		ResponseClientErrDtl(c, CodeNameExist, nil, "文件名冲突")
-		return
-	}
-
-	toDir := model.Dir{
-		ID: file.DirID,
-	}
-
-	if err := toDir.DirFindByID(); err != nil {
-		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件夹不存在")
-		svcCtx.Log.Error(err)
-		return
-	}
-
-	//文件移动
-	toPath := filepath.Join(toDir.Path, strconv.Itoa(toDir.ID))
-
-	if err := svcCtx.FileOp.FileRename(fromPath, file.Name, toPath, file.Name); err != nil {
-		ResponseServerErr(c, "文件移动失败")
-		svcCtx.Log.Error(err)
-		return
-	}
-
 	if err := file.FileUpdate(); err != nil {
-		ResponseServerErr(c, "文件移动失败")
-		svcCtx.Log.Error(err)
+		ResponseClientErrDtl(c, CodeIDNotExist, nil, "文件名冲突")
 		return
 	}
 
 	ResponseOK(c, nil, "文件移动成功")
 }
 
-type FileGetAllReq struct {
-	DirID int `json:"dirid" validate:"required,min=1"`
+type FileGetByDirReq struct {
+	DirID int `form:"dirID" validate:"required,min=1"`
 }
 
-func FileGetAll(c *gin.Context) {
-	var req FileGetAllReq
+func FileGetByDir(c *gin.Context) {
+	var req FileGetByDirReq
 
-	c.ShouldBindJSON(&req)
+	c.ShouldBind(&req)
 
 	if val := svcCtx.ZhVal.Struct(req); val != nil {
 		ResponseClientErrDtl(c, CodeReqValErr, val, "请求参数错误")
 		return
 	}
+
+	file := model.File{
+		DirID: req.DirID,
+	}
+
+	var files []model.File
+
+	if err := file.FileFindByDirID(&files); err != nil {
+		return
+	}
+
+	ResponseOK(c, files, "获取文件成功")
 }

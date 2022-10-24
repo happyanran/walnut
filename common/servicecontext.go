@@ -18,7 +18,7 @@ type ServiceContext struct {
 func NewServiceContext(c *Config) *ServiceContext {
 	log := NewLog(c.LogConf)
 
-	fileOp, err := NewFileOp(c.ServerConf)
+	fileOp, err := NewFileOp(c.ServerConf, log)
 	if err != nil {
 		log.Fatal("Dir init failed: ", err)
 	}

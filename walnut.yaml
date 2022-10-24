@@ -1,15 +1,2 @@
 server:
   ginmode: "debug"
-  addr: "127.0.0.1:8888"
-  migratetable: true
-  data: "./data"
-
-log:
-  level: info
-
-sqlite:
-  path: "./walnut.db"
-
-jwt:
-  key: "abcdefg"
-  expirehour: 2400

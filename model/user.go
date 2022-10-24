@@ -8,11 +8,13 @@ import (
 )
 
 type User struct {
-	ID        int       `gorm:"type:integer NOT NULL PRIMARY KEY AUTOINCREMENT;"`
-	Username  string    `gorm:"not null; uniqueIndex:idx_username;"`
-	Password  string    `gorm:"not null;"`
-	CreatedAt time.Time `gorm:"autoCreateTime;"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime;"`
+	ID        int       `gorm:"type:integer NOT NULL PRIMARY KEY AUTOINCREMENT;" json:"ID"`
+	UserName  string    `gorm:"not null; uniqueIndex:idx_username;" json:"userName"`
+	Password  string    `gorm:"not null;" json:"-"`
+	NickName  string    `gorm:"" json:"nickName"`
+	CreatedAt time.Time `gorm:"autoCreateTime;" json:"createdAt"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime;" json:"updatedAt"`
+	// Role Todo
 }
 
 func (User) TableName() string {
@@ -29,12 +31,12 @@ func (m *User) UserCreate() error {
 // UPDATE users SET name='hello', updated_at='2013-11-17 21:34:10' WHERE id=111 AND active=true;
 // When update with struct, GORM will only update non-zero fields, you might want to use map to update attributes or use Select to specify fields to update
 func (m *User) UserUpdate() error {
-	return svcCtx.SqlDB.Model(m).Omit("Username").Updates(m).Error
+	return svcCtx.SqlDB.Model(m).Omit("user_name").Updates(m).Error
 	//svcCtx.SqlDB.Save(u)
 }
 
 func (m *User) BeforeDelete(tx *gorm.DB) (err error) {
-	if m.Username == "admin" {
+	if m.ID == 1 {
 		return errors.New("admin user not allowed to delete")
 	}
 	return
@@ -51,11 +53,7 @@ func (m *User) UserFindByID() error {
 // db.Where(&User{Name: "jinzhu"}, "name", "Age").Find(&users)
 // SELECT * FROM users WHERE name = "jinzhu" AND age = 0;
 func (m *User) UserFindByName() error {
-	if m.Username == "" {
-		return errors.New("Username必须非0值")
-	}
-
-	return svcCtx.SqlDB.Where(m, "username").Find(m).Error
+	return svcCtx.SqlDB.Where(m, "user_name").Find(m).Error
 }
 
 // db.Order("age desc, name").Find(&users)

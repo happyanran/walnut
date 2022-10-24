@@ -6,8 +6,13 @@ import (
 )
 
 type SigninReq struct {
-	Username string `json:"username" validate:"required,min=1,max=20"`
+	UserName string `json:"userName" validate:"required,min=1,max=20"`
 	Password string `json:"password" validate:"required,min=1,max=60"`
+}
+
+type SigninResp struct {
+	NickName string `json:"nickName"`
+	Token    string `json:"token"`
 }
 
 func Signin(c *gin.Context) {
@@ -21,12 +26,11 @@ func Signin(c *gin.Context) {
 	}
 
 	user := model.User{
-		Username: req.Username,
+		UserName: req.UserName,
 	}
 
 	if err := user.UserFindByName(); err != nil {
-		ResponseServerErr(c, "发生错误")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 
@@ -38,10 +42,9 @@ func Signin(c *gin.Context) {
 	//token
 	token, err := svcCtx.Jwtw.GenerateToken(user.ID)
 	if err != nil {
-		ResponseServerErr(c, "Token生成失败")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 
-	ResponseOK(c, token, "登录成功")
+	ResponseOK(c, SigninResp{NickName: user.NickName, Token: token}, "登录成功")
 }

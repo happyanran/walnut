@@ -19,8 +19,8 @@ type Claims struct {
 
 func NewJwtw(j JwtConf) *Jwts {
 	return &Jwts{
-		JwtKey:     j.key,
-		ExpireHour: j.expireHour,
+		JwtKey:     j.Key,
+		ExpireHour: j.ExpireHour,
 	}
 }
 
@@ -32,8 +32,8 @@ func (j Jwts) GenerateToken(userId int) (string, error) {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(), // 过期时间
 			IssuedAt:  time.Now().Unix(), // 签名时间
-			Issuer:    "freedb.com",      // 签名颁发者
-			Subject:   "user token",      // 签名主题
+			Issuer:    "walnut.com",      // 签名颁发者
+			Subject:   "token",           // 签名主题
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

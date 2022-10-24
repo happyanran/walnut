@@ -5,24 +5,6 @@ import (
 	"github.com/happyanran/walnut/model"
 )
 
-func UserGetAllCnt(c *gin.Context) {
-	if c.GetInt("UserID") != 1 {
-		ResponseClientErrDtl(c, CodeNotAdmin, nil, "无权访问")
-		return
-	}
-
-	var u model.User
-	var cnt int64
-
-	if err := u.UserCount(&cnt); err != nil {
-		ResponseServerErr(c, "发生错误")
-		svcCtx.Log.Error(err)
-		return
-	}
-
-	ResponseOK(c, cnt, "成功")
-}
-
 type UserGetAllReq struct {
 	Page int `json:"page" validate:"required,min=1"`
 	Size int `json:"size" validate:"required,min=1"`
@@ -47,8 +29,7 @@ func UserGetAll(c *gin.Context) {
 	var users []model.User
 
 	if err := u.UserGetAll(&users, req.Size, (req.Page-1)*req.Size); err != nil {
-		ResponseServerErr(c, "发生错误")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 
@@ -58,6 +39,7 @@ func UserGetAll(c *gin.Context) {
 type UserAddReq struct {
 	Username string `json:"username" validate:"required,min=3,max=20"`
 	Password string `json:"password" validate:"required,min=5,max=60"`
+	Nickname string `json:"nickname" validate:"max=20"`
 }
 
 func UserAdd(c *gin.Context) {
@@ -76,13 +58,12 @@ func UserAdd(c *gin.Context) {
 	}
 
 	user := &model.User{
-		Username: req.Username,
+		UserName: req.Username,
 		Password: svcCtx.Utilw.PwdEnrypt(req.Password),
 	}
 
 	if err := user.UserCreate(); err != nil {
-		ResponseServerErr(c, "用户创建失败")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 
@@ -113,8 +94,7 @@ func UserDel(c *gin.Context) {
 	}
 
 	if err := user.UserDelete(); err != nil {
-		ResponseServerErr(c, "用户删除失败")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 
@@ -147,8 +127,7 @@ func UserChange(c *gin.Context) {
 	}
 
 	if err := user.UserUpdate(); err != nil {
-		ResponseServerErr(c, "密码更新失败")
-		svcCtx.Log.Error(err)
+		ResponseServerErr(c)
 		return
 	}
 

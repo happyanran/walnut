@@ -3,6 +3,8 @@ package common
 import (
 	"fmt"
 	"runtime"
+	"strconv"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -28,6 +30,10 @@ func (u Utils) PwdCheck(pwd string, checkpwd string) bool {
 	}
 
 	return true
+}
+
+func (u Utils) GenNanoName() string {
+	return strconv.FormatInt(int64(time.Now().UnixNano()), 36)
 }
 
 func (u Utils) GetCodeLine() string {

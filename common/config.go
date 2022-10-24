@@ -26,25 +26,25 @@ type LogConf struct {
 }
 
 type SqliteConf struct {
-	path string
+	Path string
 }
 
 type JwtConf struct {
-	key        string
-	expireHour int
+	Key        string
+	ExpireHour int
 }
 
 func LoadConfig() *Config {
 	v := viper.New()
 
-	pflag.String("config", "./walnut.yaml", "config file path.")
+	pflag.String("config", "walnut.yaml", "config file path.")
 	pflag.String("server.ginmode", "release", "The Gin mode.")
-	pflag.String("server.addr", "0.0.0.0:8080", "The address to listen on for HTTP requests.")
+	pflag.String("server.addr", "0.0.0.0:8081", "The address to listen on for HTTP requests.")
 	pflag.Bool("server.migratetable", true, "Auto migrate table.")
 	pflag.String("server.data", "./data", "Root Dir.")
 	pflag.String("log.level", "info", "log level: error, warn, info.")
-	pflag.String("sqlite.path", "./walnut.db", "Sqlite db file path.")
-	pflag.String("jwt.key", "abcdefg", "Jwt key.")
+	pflag.String("sqlite.path", "./data/walnut.db", "Sqlite db file path.")
+	pflag.String("jwt.key", "aabbccddeeffgg", "Jwt key.")
 	pflag.Int("jwt.expirehour", 24, "Jwt key expire hours.")
 
 	v.BindPFlags(pflag.CommandLine)
@@ -77,11 +77,11 @@ func LoadConfig() *Config {
 			Level: level,
 		},
 		SqliteConf: SqliteConf{
-			path: v.GetString("sqlite.path"),
+			Path: v.GetString("sqlite.path"),
 		},
 		JwtConf: JwtConf{
-			key:        v.GetString("jwt.key"),
-			expireHour: v.GetInt("jwt.expirehour"),
+			Key:        v.GetString("jwt.key"),
+			ExpireHour: v.GetInt("jwt.expirehour"),
 		},
 	}
 }

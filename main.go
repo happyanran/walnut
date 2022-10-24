@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/happyanran/walnut/api"
 	"github.com/happyanran/walnut/common"
@@ -17,6 +18,13 @@ func main() {
 
 	gin.SetMode(cfg.ServerConf.GinMode)
 	engine := gin.Default()
+
+	engine.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowHeaders:  []string{"content-type", "authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+	}))
+
 	api.Router(engine, svcCtx)
 
 	svcCtx.Log.Panic(engine.Run(cfg.ServerConf.Addr))

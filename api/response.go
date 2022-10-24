@@ -10,6 +10,7 @@ const (
 	CodeOK        = iota //http 200
 	CodeClientErr        //http 400
 	CodeServerErr        //http 500
+	CodeNotSingin
 	CodeReqValErr
 	CodeSigninErr
 	CodeNotAdmin
@@ -17,6 +18,7 @@ const (
 	CodeIDNotExist
 	CodeNameExist
 	CodeDirMoveToChild
+	CodeFileExtErr
 )
 
 func Response(c *gin.Context, httpStatus int, code int, data interface{}, msg string) {
@@ -35,10 +37,6 @@ func ResponseClientErrDtl(c *gin.Context, code int, data interface{}, msg string
 	Response(c, http.StatusBadRequest, code, data, msg)
 }
 
-func ResponseServerErr(c *gin.Context, msg string) {
-	Response(c, http.StatusInternalServerError, CodeServerErr, nil, msg)
-}
-
-func ResponseServerErrDtl(c *gin.Context, code int, data interface{}, msg string) {
-	Response(c, http.StatusInternalServerError, code, data, msg)
+func ResponseServerErr(c *gin.Context) {
+	Response(c, http.StatusInternalServerError, CodeServerErr, nil, "服务器忙，请稍等一会~")
 }
