@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/happyanran/walnut/api"
 	"github.com/happyanran/walnut/common"
 	"github.com/happyanran/walnut/model"
+	"github.com/happyanran/walnut/webdav"
 )
 
 func main() {
@@ -16,16 +16,19 @@ func main() {
 		svcCtx.Log.Fatal("Init model failed: ", err)
 	}
 
+	go webdav.WebDav(svcCtx)
+
 	gin.SetMode(cfg.ServerConf.GinMode)
 	engine := gin.Default()
 
-	engine.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"*"},
-		AllowHeaders:  []string{"content-type", "authorization"},
-		ExposeHeaders: []string{"Content-Length"},
-	}))
-
 	api.Router(engine, svcCtx)
 
-	svcCtx.Log.Panic(engine.Run(cfg.ServerConf.Addr))
+	svcCtx.Log.Info("Walnut startup.")
+
+	if svcCtx.Cfg.HttpsConf.Enable {
+		svcCtx.Log.Panic(engine.RunTLS(cfg.ServerConf.Addr, svcCtx.Cfg.HttpsConf.Certfile, svcCtx.Cfg.HttpsConf.Keyfile))
+	} else {
+		svcCtx.Log.Panic(engine.Run(cfg.ServerConf.Addr))
+	}
+
 }

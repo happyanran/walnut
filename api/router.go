@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/happyanran/walnut/common"
 	"github.com/happyanran/walnut/middleware"
@@ -12,6 +13,12 @@ func Router(e *gin.Engine, s *common.ServiceContext) {
 	svcCtx = s
 
 	e.MaxMultipartMemory = 1 << 30 // 1G
+
+	e.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowHeaders:  []string{"content-type", "authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+	}))
 
 	api := e.Group("/api")
 	{
@@ -41,7 +48,7 @@ func Router(e *gin.Engine, s *common.ServiceContext) {
 			file.GET("/filegetbydir", FileGetByDir)
 			//file.GET("/filegetbytype", FileGetByType)
 
-			file.StaticFS("/staticfs", gin.Dir(svcCtx.Cfg.ServerConf.Data, true))
+			file.StaticFS("/staticfs", gin.Dir(svcCtx.Cfg.ServerConf.Data, false))
 		}
 	}
 }
